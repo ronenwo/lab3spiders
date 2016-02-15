@@ -20,22 +20,30 @@ ArrayList<PVector> path = new ArrayList<PVector>();
 
 java.awt.Polygon pol = new java.awt.Polygon();
 
-PImage objImage, obtImage1;
+PImage objImage, obtImage1, fullImage;
 
 //ArrayList<Animation> coverListsPool = new ArrayList<Animation>(); 
 
 
+Path pathToHole, pathOutOfHole, pathFromHole;
+
 Animation coverAnim;
+AnimationPath tankAnimPath;
+
+
+
 
 void setup() {
   size(1200, 800);
   
   lines = loadStrings("/Users/rwolfson/Documents/dev/spider/Path.txt");
   
+  newPath();  
   
   
   objImage = loadImage("whitecover4.png");
   obtImage1 = loadImage("pillowcover1.png");
+  fullImage = loadImage("whitecover0.png");
   spiders = new ArrayList<Spider>();
   
   coverAnimLayer = createGraphics(width, height);
@@ -56,8 +64,9 @@ void setup() {
    fixedLayer = createGraphics(width, height); 
 
   coverAnim = new Animation(fixedLayer,"cover",5,0,0);
+  tankAnimPath = new AnimationPath(fixedLayer,pathToHole, "tank",4,755, 1160);
 
-   image(objImage,0,0,width,height);
+   
 
    buildPath(); 
 }
@@ -77,14 +86,18 @@ void buildPath(){
 
 }
 
-int frameCountSlowFactor = 10;
+int frameCountSlowFactor = 50;
 int slowFrameCount = 0;
 
 
 
 void draw() {
   
-   //background(255);
+  if (moveTank){
+    background(255);
+    image(objImage,0,0,width,height);
+  }
+   
    realLayer.beginDraw();
    //realLayer.background(255,0);
    spiderLayer.beginDraw();
@@ -94,71 +107,70 @@ void draw() {
    webLayer.stroke(204, 102, 0);
    webLayer.background(255,0);
 
-  //background(255);
-  for (Dot d : dots) {
-    d.run();
-  }
-  
-  spiderLayer.beginShape();
-  spiderLayer.noFill();
-  spiderLayer.strokeWeight(3);
-  for (int i = 0; i < pol.npoints; i++) {
-   spiderLayer.vertex(pol.xpoints[i], pol.ypoints[i]);
-  }
-  spiderLayer.endShape();
-  
-  for (Spider s : spiders) {
-    s.run();
-  }
-  
-  //realLayer.image(stripesImage,0,0);
-  realLayer.endDraw();
-  spiderLayer.endDraw();
-  webLayer.endDraw();
+    //background(255);
+    for (Dot d : dots) {
+      d.run();
+    }
   
   
-  //image(realLayer,0,0);
+    if (moveTank){
+        fixedLayer.beginDraw();
+        fixedLayer.background(255,0);
+        //fixedLayer.background(255);
+        tankAnimPath.display(mouseX, mouseY);
+        //tankAnimPath.display(0, 0);
+        fixedLayer.endDraw();
+        image(fixedLayer,0,0,width,height);        
+    }
   
-  //if (fixCover){
-  //  fixedLayer.beginDraw();
-  //  int trans = 255 - (slowFrameCount - blendFrameCount);
-  //  int trans2 = 255 - trans; 
-  //  if (trans2 < 0){
-  //     trans = 255;
-  //     trans2 = 0;
-  //  }
-    
-  //  if (!coverAnim.isStopOn()){
-  //    //coverAnim.displayFrame();
-  //  } else {
-  //    //fixedLayer.tint(10, 127);
-  //  }
-  //  fixedLayer.endDraw();
-     
-  //   //image(fixedLayer,0,0,width,height);
-  //   image(webLayer,0,0);
-  //}
-  //else{
-  //  image(webLayer,0,0);
-  //  image(spiderLayer,0,0);    
-  //}
-  
-    if (paintCover){
+    if (fixPillow){
+        spiderLayer.beginDraw();
+        spiderLayer.stroke(224, 122, 0);
+        spiderLayer.background(255,0);
+        webLayer.beginDraw();
+        webLayer.stroke(204, 102, 0);
+        webLayer.background(255,0);
+        spiderLayer.beginShape();
+        spiderLayer.noFill();
+        spiderLayer.strokeWeight(3);
+        for (int i = 0; i < pol.npoints; i++) {
+           spiderLayer.vertex(pol.xpoints[i], pol.ypoints[i]);
+        }
+        spiderLayer.endShape();
+        
+        for (Spider s : spiders) {
+          s.run();
+        }
+        
+        //realLayer.image(stripesImage,0,0);
+        //realLayer.endDraw();
+        spiderLayer.endDraw();
+        webLayer.endDraw();
+        image(webLayer,0,0);
+        image(spiderLayer,0,0);
+      
+    } else if (paintCover){
         fixedLayer.beginDraw();
         if (!coverAnim.isStopOn()){
            coverAnim.displayFrame();
         } 
-        else{
-            
-        }
         fixedLayer.endDraw();
      
         image(fixedLayer,0,0,width,height);
-  
-    }
-    else{
       image(webLayer,0,0);
       image(spiderLayer,0,0);
+  
+    }
+    //else if (!showCover){
+    //  image(webLayer,0,0);
+    //  image(spiderLayer,0,0);
+    //} 
+    else if (moveTank){
+        tankAnimPath.display(1123, 1115);
+        fixedLayer.endDraw();
+        image(fixedLayer,0,0,width,height);
+    }else if (showCover){
+       image(fullImage,0,0,width,height); 
     }
     
   
@@ -177,27 +189,99 @@ void playCoverAppearance(){
 }
 
 
+//tab
+boolean moveTank = true;
 
-
+boolean fixPillow = false;
 boolean fixCover = false;
+boolean showCover = false;
+
 boolean paintRing = false;
 boolean paintCover = false;
 int blendFrameCount = 1;
-
 
 void keyPressed() {
   if (key == CODED) {
     if (keyCode == UP) {
       println("up pressed");
-      fixCover = true;
+      fixPillow = true;
+      moveTank = false;
     } else if (keyCode == DOWN) {
       println("down pressed");
       paintCover = true;
       blendFrameCount = slowFrameCount;
       coverAnim.start();
-    } 
+    } else if (keyCode == RIGHT) {
+      println("right pressed"); 
+      fixCover = false;
+       paintCover = false;
+       showCover = true;
+    } else if (keyCode == LEFT) {
+      println("left pressed"); 
+      moveTank = true;
+       paintCover = false;
+       showCover = false;
+    }
   }
 }
+
+
+void newPath() {
+  // A path is a series of connected points
+  // A more sophisticated path might be a curve
+  pathToHole = new Path();
+  float offset = 10;
+  pathToHole.addPoint(100, 230);  
+  pathToHole.addPoint(110, 230);
+  pathToHole.addPoint(120, 230);
+  pathToHole.addPoint(130, 230);
+  pathToHole.addPoint(140, 230);
+  pathToHole.addPoint(150, 230);
+  pathToHole.addPoint(160, 230);
+  pathToHole.addPoint(170, 230);
+  pathToHole.addPoint(180, 230);
+  pathToHole.addPoint(190, 230);
+  pathToHole.addPoint(200, 230);
+  pathToHole.addPoint(210, 230);
+  pathToHole.addPoint(220, 230);
+  pathToHole.addPoint(230, 230);
+  pathToHole.addPoint(240, 230);
+  pathToHole.addPoint(250, 230);
+  pathToHole.addPoint(260, 230);
+  pathToHole.addPoint(270, 230);
+  pathToHole.addPoint(280, 230);
+  pathToHole.addPoint(290, 230);
+  pathToHole.addPoint(300, 230);
+  pathToHole.addPoint(310, 230);
+  pathToHole.addPoint(320, 230);
+  pathToHole.addPoint(330, 230);
+  pathToHole.addPoint(340, 230);
+  pathToHole.addPoint(350, 230);
+  pathToHole.addPoint(360, 230);
+  pathToHole.addPoint(370, 230);
+  pathToHole.addPoint(380, 230);
+  pathToHole.addPoint(390, 230);
+  pathToHole.addPoint(400, 230);
+  pathToHole.addPoint(410, 240);
+  pathToHole.addPoint(420, 250);
+}
+
+//void newPath() {
+//  // A path is a series of connected points
+//  // A more sophisticated path might be a curve
+//  pathToHole = new Path();
+//  float offset = 10;
+//  pathToHole.addPoint(755, 1160);  
+//  pathToHole.addPoint(980, 1150);
+//  pathToHole.addPoint(1059, 1115);
+//  pathToHole.addPoint(1123, 1115);
+//  pathToHole.addPoint(1207, 1083) ;
+//  pathToHole.addPoint(1285, 1086);
+//  pathToHole.addPoint(1362, 1038);  
+//  pathToHole.addPoint(1414, 1083);
+//  pathToHole.addPoint(1530, 1057);
+//}
+
 
 class Dot {
 
