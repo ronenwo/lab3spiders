@@ -150,26 +150,38 @@ void draw() {
         image(spiderLayer,0,0);
       
     } else if (paintCover){
+        webLayer.beginDraw();
+        webLayer.stroke(204, 102, 0);
+        webLayer.background(255,0);
+        spiderLayer.beginShape();
+        spiderLayer.noFill();
+        spiderLayer.strokeWeight(3);
+        for (int i = 0; i < pol.npoints; i++) {
+           spiderLayer.vertex(pol.xpoints[i], pol.ypoints[i]);
+        }
+        spiderLayer.endShape();
+        
+        for (Spider s : spiders) {
+          s.run();
+        }
+        
+        //realLayer.image(stripesImage,0,0);
+        //realLayer.endDraw();
+        spiderLayer.endDraw();
+        webLayer.endDraw();
+        image(webLayer,0,0);
+        image(spiderLayer,0,0);
+                
+    }
+    else if (showCover){
         fixedLayer.beginDraw();
+        fixedLayer.background(255,0);
         if (!coverAnim.isStopOn()){
            coverAnim.displayFrame();
         } 
-        fixedLayer.endDraw();
-     
+        fixedLayer.endDraw(); 
         image(fixedLayer,0,0,width,height);
-      image(webLayer,0,0);
-      image(spiderLayer,0,0);
-  
-    }
-    //else if (!showCover){
-    //  image(webLayer,0,0);
-    //  image(spiderLayer,0,0);
-    //} 
-    else if (moveTank){
-        tankAnimPath.display(1123, 1115);
-        fixedLayer.endDraw();
-        image(fixedLayer,0,0,width,height);
-    }else if (showCover){
+    }else if (showFullCover){
        image(fullImage,0,0,width,height); 
     }
     
@@ -199,6 +211,8 @@ boolean showCover = false;
 boolean paintRing = false;
 boolean paintCover = false;
 int blendFrameCount = 1;
+boolean showFullCover = false;
+
 
 void keyPressed() {
   if (key == CODED) {
@@ -209,18 +223,21 @@ void keyPressed() {
     } else if (keyCode == DOWN) {
       println("down pressed");
       paintCover = true;
-      blendFrameCount = slowFrameCount;
+      //blendFrameCount = slowFrameCount;
       coverAnim.start();
     } else if (keyCode == RIGHT) {
       println("right pressed"); 
-      fixCover = false;
-       paintCover = false;
-       showCover = true;
+      //fixCover = true;
+      fixPillow = false;
+      paintCover = false;
+      blendFrameCount = slowFrameCount;
+      showCover = true;
     } else if (keyCode == LEFT) {
       println("left pressed"); 
-      moveTank = true;
-       paintCover = false;
-       showCover = false;
+      moveTank = false;
+      paintCover = false;
+      showCover = false;
+      showFullCover = true;
     }
   }
 }
@@ -338,7 +355,7 @@ class Spider {
     for (Dot d : dots) {
       float distance = dist(x, y, d.x, d.y);
       if (distance>step*1.1 && distance<step*2 && pol.contains(d.x,d.y)) {
-        if (fixCover){
+        if (paintCover){
            //webLayer.strokeWeight(2);
            webLayer.stroke(211, 201, 199);
         }

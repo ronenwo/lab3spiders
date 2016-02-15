@@ -99,7 +99,12 @@ class Animation {
     frame = getSlowFrameCount() ;
 //    println("image frame="+frame);
 //    images[frame].resize(getWidth()+5,0);
-    layer.image(images[frame], 0, 0, width, height);
+    if (frame >= imageCount){
+      layer.image(images[imageCount-1], 0, 0, width, height);
+    }
+    else{
+      layer.image(images[frame], 0, 0, width, height);
+    }
   }
 
 
