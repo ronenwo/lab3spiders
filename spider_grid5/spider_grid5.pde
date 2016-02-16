@@ -119,6 +119,10 @@ void draw() {
         //fixedLayer.background(255);
         tankAnimPath.display(mouseX, mouseY);
         //tankAnimPath.display(0, 0);
+        //drawTankScan();
+        if (tankAnimPath.isPathEnd()){
+           drawTankScan(fixedLayer); 
+        }
         fixedLayer.endDraw();
         image(fixedLayer,0,0,width,height);        
     }
@@ -186,9 +190,9 @@ void draw() {
     }
     
     
-    textSize(32);
-    fill(50);
-    text("x,y="+mouseX+","+mouseY, 100,100);
+    //textSize(32);
+    //fill(50);
+    //text("x,y="+mouseX+","+mouseY, 100,100);
     
   
   //if (frameCount%2==0 && frameCount<1200) saveFrame("image-####.gif");  
@@ -203,6 +207,21 @@ void draw() {
 void playCoverAppearance(){
     coverAnim.displayTarget(width,height);
     
+}
+
+
+void drawTankScan(PGraphics layer){
+   
+  int x = 490;
+  int y = 290;
+  for (int i =0; i<6; i++){
+    layer.stroke(211, 201, 199);
+    layer.tint(255,200);
+    layer.line(x,y-10,x+40,y-25-i+random(-1,1));
+    layer.line(x,y,x+40,y-5+i+random(-1,1));
+    layer.line(x,y+10,x+40,y+25+i+random(-1,1));
+  }
+      
 }
 
 

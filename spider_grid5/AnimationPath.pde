@@ -31,13 +31,19 @@ class AnimationPath {
     frame = (frame+1) % imageCount;
     PVector point = path.nextToEnd();
     if (path.isEnd()){
-       layer.tint(255,127); 
        layer.image(images[0], point.x, point.y);
     }
     else{
       layer.image(images[frame], point.x, point.y);
     }
   }
+  
+  
+  boolean isPathEnd(){
+     return path.isEnd(); 
+  }
+  
+  
   
   int getWidth() {
     return images[0].width;
